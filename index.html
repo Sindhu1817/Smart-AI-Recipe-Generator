@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart AI Recipe Generator</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+
+  <!-- DARK MODE TOGGLE -->
+  <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+    <i data-lucide="moon" id="moonIcon"></i>
+    <i data-lucide="sun"  id="sunIcon"  style="display:none"></i>
+  </button>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-icons">
+      <span class="hero-icon">🍳</span>
+      <span class="hero-icon">🌿</span>
+      <span class="hero-icon">🫚</span>
+      <span class="hero-icon">🧄</span>
+      <span class="hero-icon">🍋</span>
+    </div>
+    <div class="hero-content">
+      <div class="logo-badge">AI Powered Chef</div>
+      <h1 class="hero-title">Smart <em>Recipe</em><br/>Generator</h1>
+      <p class="hero-subtitle">Tell us what's in your kitchen — our AI chef crafts a gorgeous, restaurant-quality recipe just for you.</p>
+
+      <div class="input-card">
+        <label class="input-label" for="ingredientInput">
+          <i data-lucide="shopping-basket"></i> What ingredients do you have?
+        </label>
+
+        <div class="input-row">
+          <input
+            type="text"
+            id="ingredientInput"
+            class="ingredient-input"
+            placeholder="e.g. chicken, garlic, lemon, olive oil, rosemary..."
+            autocomplete="off"
+          />
+          <button class="voice-btn" id="voiceBtn" title="Click to speak ingredients">
+            <i data-lucide="mic" id="micIcon"></i>
+          </button>
+        </div>
+
+        <div class="tag-hints">
+          <span class="hint-label">Try:</span>
+          <button class="tag" onclick="fillExample('tomatoes, pasta, basil, garlic, parmesan')">🍝 Pasta Night</button>
+          <button class="tag" onclick="fillExample('chicken, rice, turmeric, ginger, onion, yogurt')">🍛 Curry Bowl</button>
+          <button class="tag" onclick="fillExample('eggs, cheese, spinach, mushrooms, butter')">🥚 Quick Brunch</button>
+        </div>
+
+        <button class="generate-btn" id="generateBtn" onclick="generateRecipe()">
+          <i data-lucide="sparkles"></i>
+          <span>Generate My Recipe</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LOADER -->
+  <div class="loader-overlay" id="loaderOverlay" style="display:none">
+    <div class="loader-box">
+      <div class="loader-emoji">👨‍🍳</div>
+      <div class="spinner"></div>
+      <p class="loader-text" id="loaderText">Consulting the AI chef...</p>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <main class="result-section" id="resultSection" style="display:none">
+    <div class="result-container">
+
+      <div class="action-row">
+        <button class="action-btn secondary" onclick="resetApp()">
+          <i data-lucide="arrow-left"></i> New Recipe
+        </button>
+        <button class="action-btn primary" onclick="generateRecipe()">
+          <i data-lucide="refresh-cw"></i> Regenerate
+        </button>
+        <button class="action-btn success" onclick="downloadPDF()">
+          <i data-lucide="download"></i> Download PDF
+        </button>
+      </div>
+
+      <article class="recipe-card" id="recipeCard">
+
+        <!-- Image -->
+        <div class="recipe-image-wrap" id="recipeImageWrap">
+          <div class="image-placeholder" id="imagePlaceholder">
+            <div class="img-spinner"></div>
+            <span class="image-placeholder-text">Painting your dish with AI...</span>
+          </div>
+          <img class="recipe-image" id="recipeImage" src="" alt="" style="display:none"/>
+          <div class="image-gradient"></div>
+          <div class="image-overlay">
+            <div class="cuisine-badge" id="cuisineBadge">World</div>
+            <div class="image-title-preview" id="imageTitlePreview"></div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="recipe-body">
+          <h2 class="recipe-title" id="recipeTitle">Recipe Title</h2>
+
+          <div class="stats-row">
+            <div class="stat">
+              <i data-lucide="clock"></i>
+              <span class="stat-label">Cook Time</span>
+              <span class="stat-value" id="cookTime">—</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <i data-lucide="bar-chart-2"></i>
+              <span class="stat-label">Difficulty</span>
+              <span class="stat-value" id="difficulty">—</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat">
+              <i data-lucide="users"></i>
+              <span class="stat-label">Serves</span>
+              <span class="stat-value" id="servings">—</span>
+            </div>
+          </div>
+
+          <section class="recipe-section">
+            <h3 class="section-title"><i data-lucide="list"></i> Ingredients</h3>
+            <ul class="ingredient-list" id="ingredientList"></ul>
+          </section>
+
+          <section class="recipe-section">
+            <h3 class="section-title"><i data-lucide="chef-hat"></i> Step-by-Step Instructions</h3>
+            <ol class="steps-list" id="stepsList"></ol>
+          </section>
+
+          <section class="recipe-section substitutes-section">
+            <h3 class="section-title"><i data-lucide="repeat"></i> Smart Substitutions</h3>
+            <p class="substitutes-intro">Missing something? Here are easy swaps:</p>
+            <div class="substitutes-grid" id="substitutesGrid"></div>
+          </section>
+
+          <div class="chef-tip" id="chefTip" style="display:none">
+            <span class="tip-icon">👨‍🍳</span>
+            <div>
+              <strong>Chef's Pro Tip</strong>
+              <p id="chefTipText"></p>
+            </div>
+          </div>
+
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- FOOTER — branded to Sindhu Gandi -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">Smart <span>AI</span> Recipe Generator</div>
+      <div class="footer-copy">
+        Crafted with ❤️ by <a href="#">Sindhu Gandi</a>
+        <span class="footer-divider">|</span>
+        Powered by Groq AI &amp; Pollinations
+        <span class="footer-divider">|</span>
+        © 2026
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
